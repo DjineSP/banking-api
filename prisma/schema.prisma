@@ -1,0 +1,102 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  CLIENT
+}
+
+enum TransactionType {
+  CREDIT
+  DEBIT
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+model User {
+  id         String    @id @default(uuid())
+  login      String    @unique
+  password   String
+  email      String    @unique
+  fullname   String
+  role       Role      @default(CLIENT)
+  active     Boolean   @default(true)
+  created_at DateTime  @default(now())
+
+  accounts   Account[]
+
+  @@map("users")
+}
+
+model Bank {
+  id               String  @id @default(uuid())
+  code             String  @unique
+  name             String
+  min_amount       Decimal @db.Decimal(15, 2)
+  max_amount       Decimal @db.Decimal(15, 2)
+  internal_fee_tx  Decimal @db.Decimal(5, 4)
+  interbank_fee_tx Decimal @db.Decimal(5, 4)
+  withdraw_fee     Decimal @db.Decimal(5, 4)
+  active           Boolean  @default(true)
+  created_at       DateTime @default(now())
+
+  accounts        Account[]
+  transactions    Transaction[] @relation("SourceBank")
+  counterpart_txs Transaction[] @relation("CounterpartBank")
+
+  @@map("banks")
+}
+
+model Account {
+  id             String   @id @default(uuid())
+  account_number String   @unique
+  balance        Decimal  @default(0) @db.Decimal(15, 2)
+  currency       String   @default("XAF")
+  created_at     DateTime @default(now())
+
+  user_id String
+  bank_id String
+
+  user         User          @relation(fields: [user_id], references: [id])
+  bank         Bank          @relation(fields: [bank_id], references: [id])
+  transactions Transaction[]
+
+  @@map("accounts")
+}
+
+model Transaction {
+  id                         String            @id @default(uuid())
+  reference                  String
+  amount                     Decimal           @db.Decimal(15, 2)
+  fee                        Decimal           @default(0) @db.Decimal(15, 2)
+  net_amount                 Decimal           @db.Decimal(15, 2)
+  type                       TransactionType
+  status                     TransactionStatus @default(PENDING)
+  description                String?
+  counterpart_account_number String
+  created_at                 DateTime          @default(now())
+  processed_at               DateTime?
+
+  account_id          String
+  bank_id             String
+  counterpart_bank_id String
+
+  account          Account @relation(fields: [account_id], references: [id])
+  bank             Bank    @relation("SourceBank", fields: [bank_id], references: [id])
+  counterpart_bank Bank    @relation("CounterpartBank", fields: [counterpart_bank_id], references: [id])
+
+  @@index([reference])
+  @@index([account_id])
+  @@index([status])
+  @@map("transactions")
+}

@@ -1,0 +1,116 @@
+User:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    login:
+      type: string
+    email:
+      type: string
+    fullname:
+      type: string
+    role:
+      type: string
+      enum: [ADMIN, CLIENT]
+    active:
+      type: boolean
+    created_at:
+      type: string
+      format: date-time
+
+Bank:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    code:
+      type: string
+    name:
+      type: string
+    min_amount:
+      type: number
+    max_amount:
+      type: number
+    internal_fee_tx:
+      type: number
+    interbank_fee_tx:
+      type: number
+    withdraw_fee:
+      type: number
+    active:
+      type: boolean
+    created_at:
+      type: string
+      format: date-time
+
+Account:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    account_number:
+      type: string
+    balance:
+      type: number
+    currency:
+      type: string
+    created_at:
+      type: string
+      format: date-time
+    user:
+      $ref: '#/components/schemas/User'
+    bank:
+      $ref: '#/components/schemas/Bank'
+
+Transaction:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    reference:
+      type: string
+      format: uuid
+    amount:
+      type: number
+    fee:
+      type: number
+    net_amount:
+      type: number
+    type:
+      type: string
+      enum: [CREDIT, DEBIT]
+    status:
+      type: string
+      enum: [PENDING, SUCCESS, FAILED]
+    description:
+      type: string
+    counterpart_account_number:
+      type: string
+    created_at:
+      type: string
+      format: date-time
+    processed_at:
+      type: string
+      format: date-time
+
+Error:
+  type: object
+  properties:
+    success:
+      type: boolean
+      example: false
+    message:
+      type: string
+
+Success:
+  type: object
+  properties:
+    success:
+      type: boolean
+      example: true
+    data:
+      type: object

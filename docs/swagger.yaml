@@ -1,0 +1,12 @@
+openapi: 3.0.0
+info:
+  title: Banking API
+  version: 1.0.0
+  description: API de gestion de transactions bancaires.
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

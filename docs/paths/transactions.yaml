@@ -1,0 +1,206 @@
+/transactions/transfer:
+  post:
+    tags: [Transactions]
+    summary: Initier un transfert (génère 2 lignes) [ADMIN, CLIENT]
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [from_account_id, to_account_number, amount]
+            properties:
+              from_account_id:
+                type: string
+                format: uuid
+              to_account_number:
+                type: string
+                example: ACC-12345678-0001
+              amount:
+                type: number
+                example: 10000
+              description:
+                type: string
+                example: Paiement loyer
+    responses:
+      '201':
+        description: Transfert effectué — 2 transactions retournées
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Transaction'
+      '422':
+        description: Solde insuffisant ou montant hors limites
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+/transactions/deposit:
+  post:
+    tags: [Transactions]
+    summary: Dépôt sur un compte [ADMIN, CLIENT]
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [account_id, amount]
+            properties:
+              account_id:
+                type: string
+                format: uuid
+              amount:
+                type: number
+                example: 50000
+              description:
+                type: string
+    responses:
+      '201':
+        description: Dépôt effectué
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Success'
+      '404':
+        description: Compte introuvable
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+/transactions/withdraw:
+  post:
+    tags: [Transactions]
+    summary: Retrait d'un compte [ADMIN, CLIENT]
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [account_id, amount]
+            properties:
+              account_id:
+                type: string
+                format: uuid
+              amount:
+                type: number
+                example: 5000
+              description:
+                type: string
+    responses:
+      '201':
+        description: Retrait effectué
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Success'
+      '422':
+        description: Solde insuffisant
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+/transactions:
+  get:
+    tags: [Transactions]
+    summary: Lister toutes les transactions [ADMIN]
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Liste des transactions
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Transaction'
+      '403':
+        description: Accès refusé
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+/transactions/{id}:
+  get:
+    tags: [Transactions]
+    summary: Détail d'une transaction [ADMIN, CLIENT]
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: Transaction retournée
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Success'
+      '404':
+        description: Transaction introuvable
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+/transactions/ref/{reference}:
+  get:
+    tags: [Transactions]
+    summary: Les 2 côtés d'un transfert par référence [ADMIN, CLIENT]
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: reference
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: Les 2 transactions liées retournées
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Transaction'
+      '404':
+        description: Référence introuvable
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'

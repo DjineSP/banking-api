@@ -1,0 +1,69 @@
+/auth/login:
+  post:
+    tags: [Auth]
+    summary: Se connecter
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [login, password]
+            properties:
+              login:
+                type: string
+                example: djine
+              password:
+                type: string
+                example: secret123
+    responses:
+      '200':
+        description: Connexion réussie
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                data:
+                  type: object
+                  properties:
+                    token:
+                      type: string
+                    user:
+                      $ref: '#/components/schemas/User'
+      '401':
+        description: Identifiants invalides
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+/auth/me/password:
+  patch:
+    tags: [Auth]
+    summary: Changer le mot de passe [ADMIN, CLIENT]
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [oldPassword, newPassword]
+            properties:
+              oldPassword:
+                type: string
+              newPassword:
+                type: string
+    responses:
+      '200':
+        description: Mot de passe mis à jour
+      '401':
+        description: Ancien mot de passe incorrect
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'

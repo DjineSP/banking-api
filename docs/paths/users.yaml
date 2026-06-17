@@ -1,0 +1,187 @@
+/users:
+  post:
+    tags: [Users]
+    summary: Créer un utilisateur [ADMIN]
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [login, password, email, fullname]
+            properties:
+              login:
+                type: string
+                example: djine
+              password:
+                type: string
+                example: secret123
+              email:
+                type: string
+                example: djine@example.com
+              fullname:
+                type: string
+                example: Djine Sinto Pafing
+              role:
+                type: string
+                enum: [ADMIN, CLIENT]
+                default: CLIENT
+    responses:
+      '201':
+        description: Utilisateur créé
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Success'
+      '409':
+        description: Login ou email déjà utilisé
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+      '422':
+        description: Données invalides
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+  get:
+    tags: [Users]
+    summary: Lister tous les utilisateurs [ADMIN]
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Liste des utilisateurs
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/User'
+      '403':
+        description: Accès refusé
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+/users/{id}:
+  get:
+    tags: [Users]
+    summary: Détail d'un utilisateur [ADMIN]
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: Utilisateur retourné
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Success'
+      '404':
+        description: Utilisateur introuvable
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+  patch:
+    tags: [Users]
+    summary: Modifier un utilisateur [ADMIN]
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+              fullname:
+                type: string
+    responses:
+      '200':
+        description: Utilisateur modifié
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Success'
+      '404':
+        description: Utilisateur introuvable
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+  delete:
+    tags: [Users]
+    summary: Supprimer un utilisateur [ADMIN]
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '204':
+        description: Utilisateur supprimé
+      '404':
+        description: Utilisateur introuvable
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+/users/{id}/toggle:
+  patch:
+    tags: [Users]
+    summary: Activer / désactiver un utilisateur [ADMIN]
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: Statut modifié
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Success'
+      '404':
+        description: Utilisateur introuvable
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
